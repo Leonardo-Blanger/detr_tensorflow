@@ -8,6 +8,9 @@ class ResNet50Backbone(tf.keras.Model):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self.channel_avg = tf.constant([0.485, 0.456, 0.406])
+        self.channel_std = tf.constant([0.229, 0.224, 0.225])
+
         self.pad1 = ZeroPadding2D(3, name='pad1')
         self.conv1 = Conv2D(64, kernel_size=7, strides=2, padding='valid',
                             use_bias=False, name='conv1')
@@ -46,6 +49,8 @@ class ResNet50Backbone(tf.keras.Model):
 
 
     def call(self, x):
+        x = (x - self.channel_avg) / self.channel_std
+
         x = self.pad1(x)
         x = self.conv1(x)
         x = self.bn1(x)
