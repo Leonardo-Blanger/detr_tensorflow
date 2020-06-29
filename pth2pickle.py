@@ -17,11 +17,17 @@ for name, w in checkpoint['model'].items():
 
     # Adjust for the different order in which PyTorch and TF
     # represent convolutional weights
-    if 'conv' in name or 'downsample/0/' in name:
-        name = name.replace('weight', 'kernel')
+    if w.ndim == 4:
         w = w.transpose((2, 3, 1, 0))
 
-    print('converting var:', name)
+    if 'norm' in name:
+        name = name.replace('/weight', '/gamma')
+        name = name.replace('/bias', '/beta')
+
+    if 'bn' not in name and 'downsample/1' not in name:
+        name = name.replace('/weight', '/kernel')
+
+    print('converting var:', name, w.shape)
     params[name] = w
 
 output_file = args.checkpoint[:-3] + 'pickle'
