@@ -41,9 +41,9 @@ class PositionEmbeddingSine(tf.keras.Model):
                           tf.math.cos(pos_y[..., 1::2])], axis=4)
         
 
-        pos_x = tf.reshape(pos_x, pos_x.shape[:3].as_list() + [-1])
-        pos_y = tf.reshape(pos_y, pos_y.shape[:3].as_list() + [-1])
+        shape = [tf.shape(pos_x)[i] for i in range(3)] + [-1]
+        pos_x = tf.reshape(pos_x, shape)
+        pos_y = tf.reshape(pos_y, shape)
 
         pos_emb = tf.concat([pos_y, pos_x], axis=3)
-
         return pos_emb
