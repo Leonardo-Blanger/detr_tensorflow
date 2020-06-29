@@ -2,10 +2,10 @@ import pickle
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, ReLU
 
-from backbone import ResNet50Backbone
-from custom_layers import Linear
-from position_embeddings import PositionEmbeddingSine
-from transformer import Transformer
+from .backbone import ResNet50Backbone
+from .custom_layers import Linear
+from .position_embeddings import PositionEmbeddingSine
+from .transformer import Transformer
 
 
 class DETR(tf.keras.Model):

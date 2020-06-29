@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Dropout, Activation, LayerNormalization
 
-from custom_layers import Linear
+from .custom_layers import Linear
 
 
 class Transformer(tf.keras.Model):
