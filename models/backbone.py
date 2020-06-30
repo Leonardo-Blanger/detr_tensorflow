@@ -4,8 +4,8 @@ from tensorflow.keras.layers import ZeroPadding2D, Conv2D, ReLU, MaxPool2D
 from .custom_layers import FrozenBatchNorm2D
 
 
-class ResNet50Backbone(tf.keras.Model):
-    def __init__(self, replace_stride_with_dilation=[False, False, False], **kwargs):
+class ResNetBase(tf.keras.Model):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
         self.channel_avg = tf.constant([0.485, 0.456, 0.406])
@@ -18,6 +18,28 @@ class ResNet50Backbone(tf.keras.Model):
         self.relu = ReLU(name='relu')
         self.pad2 = ZeroPadding2D(1, name='pad2')
         self.maxpool = MaxPool2D(pool_size=3, strides=2, padding='valid')
+
+
+    def call(self, x):
+        x = (x - self.channel_avg) / self.channel_std
+
+        x = self.pad1(x)
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.pad2(x)
+        x = self.maxpool(x)
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        return x
+
+
+class ResNet50Backbone(ResNetBase):
+    def __init__(self, replace_stride_with_dilation=[False, False, False], **kwargs):
+        super().__init__(**kwargs)
 
         self.layer1 = ResidualBlock(num_bottlenecks=3, dim1=64, dim2=256, strides=1,
                                    replace_stride_with_dilation=False, name='layer1')
@@ -32,37 +54,9 @@ class ResNet50Backbone(tf.keras.Model):
                                     name='layer4')
 
 
-    def call(self, x):
-        x = (x - self.channel_avg) / self.channel_std
-
-        x = self.pad1(x)
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.pad2(x)
-        x = self.maxpool(x)
-
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-        return x
-
-
-class ResNet101Backbone(tf.keras.Model):
+class ResNet101Backbone(ResNetBase):
     def __init__(self, replace_stride_with_dilation=[False, False, False], **kwargs):
         super().__init__(**kwargs)
-
-        self.channel_avg = tf.constant([0.485, 0.456, 0.406])
-        self.channel_std = tf.constant([0.229, 0.224, 0.225])
-
-        self.pad1 = ZeroPadding2D(3, name='pad1')
-        self.conv1 = Conv2D(64, kernel_size=7, strides=2, padding='valid',
-                            use_bias=False, name='conv1')
-        self.bn1 = FrozenBatchNorm2D(name='bn1')
-        self.relu = ReLU(name='relu')
-        self.pad2 = ZeroPadding2D(1, name='pad2')
-        self.maxpool = MaxPool2D(pool_size=3, strides=2, padding='valid')
 
         self.layer1 = ResidualBlock(num_bottlenecks=3, dim1=64, dim2=256, strides=1,
                                     replace_stride_with_dilation=False, name='layer1')
@@ -75,24 +69,6 @@ class ResNet101Backbone(tf.keras.Model):
         self.layer4 = ResidualBlock(num_bottlenecks=3, dim1=512, dim2=2048, strides=2,
                                     replace_stride_with_dilation=replace_stride_with_dilation[2],
                                     name='layer4')
-
-
-    def call(self, x):
-        x = (x - self.channel_avg) / self.channel_std
-
-        x = self.pad1(x)
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.pad2(x)
-        x = self.maxpool(x)
-
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-
-        return x
 
 
 class ResidualBlock(tf.keras.Model):
