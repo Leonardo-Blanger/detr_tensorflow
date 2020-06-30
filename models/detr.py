@@ -9,17 +9,24 @@ from .transformer import Transformer
 
 
 class DETR(tf.keras.Model):
-    def __init__(self, num_classes=91, num_queries=100, **kwargs):
+    def __init__(self, num_classes=91, num_queries=100,
+                 backbone=None,
+                 pos_encoder=None,
+                 transformer=None,
+                 **kwargs):
         super().__init__(**kwargs)
         self.num_queries = num_queries
 
-        self.backbone = ResNet50Backbone(name='backbone/0/body')
-        self.pos_encoder = PositionEmbeddingSine(num_pos_features=128,
-                                                 normalize=True)
-        self.transformer = Transformer(return_intermediate_dec=True, name='transformer')
+        self.backbone = backbone or ResNet50Backbone(name='backbone/0/body')
+        self.transformer = transformer or Transformer(return_intermediate_dec=True,
+                                                      name='transformer')
         self.model_dim = self.transformer.model_dim
 
+        self.pos_encoder = pos_encoder or PositionEmbeddingSine(
+            num_pos_features=self.model_dim // 2, normalize=True)
+
         self.input_proj = Conv2D(self.model_dim, kernel_size=1, name='input_proj')
+
         self.query_embed = tf.Variable(
             tf.zeros((num_queries, self.model_dim), dtype=tf.float32),
             name='query_embed/kernel')
