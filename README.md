@@ -62,19 +62,30 @@ Finally, to get the final detections, call the model on your data with the `post
 ```python
 from utils import preprocess_image
 
-inp = tf.expand_dims(preprocess_image(image), axis=0)
-outputs = detr(inp, post_process=True)
+inp_image, mask = preprocess_image(image)
+inp_image = tf.expand_dims(inp_image, axis=0)
+mask = tf.expand_dims(mask, axis=0)
 
-labels, scores, boxes = [outputs[k].numpy() for k in ['labels', 'scores', 'boxes']]
+outputs = detr((inp_image, mask), post_process=True)
+labels, scores, boxes = [outputs[k][0].numpy() for k in ['labels', 'scores', 'boxes']]
 
 keep = scores > 0.7
 labels = labels[keep]
 scores = scores[keep]
 boxes = boxes[keep]
+boxes = absolute2relative(boxes, (image.shape[1], image.shape[0])).numpy()
 ```
 
 (so much easier than anchor decoding + Non Max Suppression)
 
+
+### Demo
+
+Short demo script that summarizes the above instructions.
+
+```bash
+python demo.py
+```
 
 ### Running Evaluation
 
@@ -92,7 +103,7 @@ It will save the detections into the `resnet50_dc5_results.json` file, in the CO
 
 ## Detection Samples
 
-**TODO**
+![sample](/samples/sample_1_boxes.png)
 
 
 ## References
