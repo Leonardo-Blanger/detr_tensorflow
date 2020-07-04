@@ -3,8 +3,6 @@ __pycache__/*
 *~
 *.pickle
 *.pth
-*.jpg
-*.jpeg
 README.html
 .markdown-preview.html
 *.json
