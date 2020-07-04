@@ -1,6 +1,6 @@
 # DETR Tensorflow
 
-This project is my attempt at a Tensorflow implementation of the very cool DETR architecture for Object Detection [(Carion *et al.*)](https://ai.facebook.com/research/publications/end-to-end-object-detection-with-transformers).
+This project is my attempt at a Tensorflow implementation of the very cool DETR architecture for Object Detection, from the paper *End-to-end Object Detection with Transformers* [(Carion *et al.*)](https://ai.facebook.com/research/publications/end-to-end-object-detection-with-transformers).
 
 **Attention:** This is a work in progress. It still does not offer all the functionality from the original implementation. If you only want to perform detection using DETR in Tensorflow, this is already possible. If you want to perform Panoptic Segmentation, fully replicate the paper's experiments, or even train on your dataset, this is still not possible.
 
