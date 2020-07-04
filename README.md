@@ -1,14 +1,14 @@
 # DETR Tensorflow
 
-This project is my attempt at a Tensorflow implementation of the very cool DETR architecture for Object Detection, from the paper *End-to-end Object Detection with Transformers* [(Carion *et al.*)](https://ai.facebook.com/research/publications/end-to-end-object-detection-with-transformers).
+This project is my attempt at a Tensorflow implementation of the DETR architecture for Object Detection, from the paper *End-to-end Object Detection with Transformers* [(Carion *et al.*)](https://ai.facebook.com/research/publications/end-to-end-object-detection-with-transformers).
 
-**Attention:** This is a work in progress. It still does not offer all the functionality from the original implementation. If you only want to perform detection using DETR in Tensorflow, this is already possible. If you want to perform Panoptic Segmentation, fully replicate the paper's experiments, or even train on your dataset, this is still not possible.
+**Attention:** This is a work in progress. It still does not offer all the functionality from the original implementation. If you only want to perform detection using DETR in Tensorflow, this is already possible. If you want to perform Panoptic Segmentation, fully replicate the paper's experiments, or train on your own dataset, this is still not possible.
 
 ## Overview
 
 DETR, which stands for **De**tection **Tr**ansformers, was proposed by a team from the Facebook AI group, and it is, as of today, a radical shift from the current approaches to perform Deep Learning based Object Detection.
 
-Instead of filtering and refining a set of object proposals, as done by two-stage techniques like Faster-RCNN and its adaptations, or generating dense detection grids, as done by single-stage techniques like SSD and YOLO, DETR frames the detection problem as an image to set problem. With this formulation, both the architecture and the training process become significantly easier. There is no need for hand-designed anchor matching schemes or post-processing steps like Non Max Suppression to discard redundant detections.
+Instead of filtering and refining a set of object proposals, as done by two-stage techniques like Faster-RCNN and its adaptations, or generating dense detection grids, as done by single-stage techniques like SSD and YOLO, DETR frames the detection problem as an image to set mapping. With this formulation, both the architecture and the training process become significantly easier. There is no need for hand-designed anchor matching schemes or post-processing steps like Non Max Suppression to discard redundant detections.
 
 DETR uses a CNN backbone to extract a higher level feature representation of the image, which is then fed into a Transformer model. The Transformer Encoder is responsible for processing this image representation, while the Decoder maps a fixed set of learned object queries to detections, performing attention over the Encoder's output.
 
@@ -33,7 +33,7 @@ Bellow are the results for the COCO val2017 dataset, as reported by the official
 DETR | R50 | 42.0 | 41.9
 DETR-DC5 | R50 | 43.3 | 43.2
 DETR | R101 | 43.5 | 43.4
-DETR-DC5 | R101 | 44.9 | x
+DETR-DC5 | R101 | 44.9 | 44.8
 
 ## Requirements
 
@@ -112,6 +112,14 @@ It will save the detections into the `resnet50_dc5_results.json` file, in the CO
 ## Detection Samples
 
 ![sample](/samples/sample_1_boxes.png)
+
+
+## TODOs
+
+- [ ] Provide pretrained weights already in `hdf5` format.
+- [ ] Design a less hacky way of converting the weights. Convert directly into `hdf5` instead of `pickle`.
+- [ ] Implement the training related code.
+- [ ] Repeat the paper's experiments.
 
 
 ## References
