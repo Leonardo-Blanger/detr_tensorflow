@@ -31,7 +31,7 @@ Bellow are the results for the COCO val2017 dataset, as reported by the official
 **name** | **backbone** | **box AP (official)** | **box AP (ours)**
 -------- | ------------ | --------------------- | -----------------
 DETR | R50 | 42.0 | 41.9
-DETR-DC5 | R50 | 43.3 | x
+DETR-DC5 | R50 | 43.3 | 43.2
 DETR | R101 | 43.5 | 43.4
 DETR-DC5 | R101 | 44.9 | x
 
@@ -81,7 +81,22 @@ boxes = boxes[keep]
 I provided an `eval.py` script that evaluates the model on the COCO val2017 dataset, same as reported in the paper. Note that you don't need to download the whole COCO dataset for this, only the val2017 partition (~1GB) and annotations (~241MB), from [here](https://cocodataset.org/#download).
 
 ```bash
-python eval.py --coco_path=/path/to/coco --backbone=resnet50-dc5 --frozen_weights=detr-r50-dc5-f0fb7ef5.pickle --results_file=resnet50_dc5_results.json --batch_size=1
+python eval.py --coco_path=/path/to/coco \
+               --backbone=resnet50-dc5 \
+			   --frozen_weights=detr-r50-dc5-f0fb7ef5.pickle \
+			   --results_file=resnet50_dc5_results.json --batch_size=1
 ```
 
 It will save the detections into the `resnet50_dc5_results.json` file, in the COCO dictionary format, so you can run evaluation again with the `--from_file` flag, and it won't need to perform image inference this time.
+
+
+## Detection Samples
+
+**TODO**
+
+
+## References
+
+* **The REDR paper:** Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, Sergey Zagoruyko, *End-to-end Object Detection with Transformers*, 2020, from the Facebook AI group. [link to paper](https://arxiv.org/abs/2005.12872)
+
+* **The official Pytorch implementation:** https://github.com/facebookresearch/detr
