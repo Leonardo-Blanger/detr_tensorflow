@@ -7,3 +7,4 @@ __pycache__/*
 *.jpeg
 README.html
 .markdown-preview.html
+*.json
