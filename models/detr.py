@@ -6,6 +6,7 @@ from .backbone import ResNet50Backbone
 from .custom_layers import Linear
 from .position_embeddings import PositionEmbeddingSine
 from .transformer import Transformer
+from utils import cxcywh2xyxy
 
 
 class DETR(tf.keras.Model):
@@ -42,7 +43,7 @@ class DETR(tf.keras.Model):
         ], name='bbox_embed')
 
 
-    def call(self, inp, training=False):
+    def call(self, inp, training=False, post_process=False):
         x, masks = inp
         x = self.backbone(x, training=training)
         masks = self.downsample_masks(masks, x)
@@ -54,8 +55,18 @@ class DETR(tf.keras.Model):
         outputs_class = self.class_embed(hs)
         outputs_coord = tf.sigmoid(self.bbox_embed(hs))
 
-        return {'pred_logits': outputs_class[-1],
-                'pred_boxes': outputs_coord[-1]}
+        output = {'pred_logits': outputs_class[-1],
+                  'pred_boxes': outputs_coord[-1]}
+
+        if post_process:
+            output = self.post_process(output)
+        return output
+
+
+    def build(self, input_shape=None, **kwargs):
+        if input_shape is None:
+            input_shape = [(None, None, None, 3), (None, None, None)]
+        super().build(input_shape, **kwargs)
 
 
     def downsample_masks(self, masks, x):
@@ -69,7 +80,20 @@ class DETR(tf.keras.Model):
         masks = tf.squeeze(masks, -1)
         masks = tf.cast(masks, tf.bool)
         return masks
+
+
+    def post_process(self, output):
+        logits, boxes = [output[k] for k in ['pred_logits', 'pred_boxes']]
         
+        probs = tf.nn.softmax(logits, axis=-1)[..., :-1]
+        scores = tf.reduce_max(probs, axis=-1)
+        labels = tf.argmax(probs, axis=-1)
+        boxes = cxcywh2xyxy(boxes)
+
+        output = {'scores': scores,
+                  'labels': labels,
+                  'boxes': boxes}
+        return output
 
     def load_from_pickle(self, pickle_file, verbose=False):
         with open(pickle_file, 'rb') as f:
