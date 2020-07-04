@@ -52,7 +52,7 @@ The `utils.preprocess_image` function is designed to perform all the preprocessi
 
 Finally, to get the final detections, call the model on your data with the `post_processing` flag. This way, it returns softmax scores instead of the pre-activation logits, and also discards the `no-object` dimension from the output. It doesn't discard low scored detections, although the output from DETR is simple enough that this isn't hard to do.
 
-```
+```python
 from utils import preprocess_image
 
 inp = tf.expand_dims(preprocess_image(image), axis=0)
@@ -73,7 +73,7 @@ boxes = boxes[keep]
 
 I provided a `eval.py` script that evaluates the model on the COCO val2017 dataset, same as reported in the paper. Note that you don't need to download the whole COCO dataset for this, only the val2017 partition (~1GB) and annotations (~241MB), from [here](https://cocodataset.org/#download).
 
-```
+```bash
 python eval.py --coco_path=/path/to/coco --backbone=resnet50-dc5 --frozen_weights=detr-r50-dc5-f0fb7ef5.pickle --results_file=resnet50_dc5_results.json --batch_size=1
 ```
 
