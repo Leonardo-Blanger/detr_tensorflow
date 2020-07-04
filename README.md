@@ -35,6 +35,14 @@ DETR-DC5 | R50 | 43.3 | 43.2
 DETR | R101 | 43.5 | 43.4
 DETR-DC5 | R101 | 44.9 | x
 
+## Requirements
+
+The code was tested with `python 3.7.5` and `tensorflow 2.2.0`. In order to run the evaluation, you'll also need the `pycocotools` library.
+
+```bash
+pip install -U 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
+```
+
 ## How to Use
 
 First, download the frozen Pytorch weights `.pth` file for the model version you want to use from the official implementation's Github repo [here](https://github.com/facebookresearch/detr). Then use the provided `pth2pickle.py` script to convert the weights into a pickled python dictionary. For instance:
