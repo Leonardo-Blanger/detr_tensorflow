@@ -108,13 +108,9 @@ class BottleNeck(tf.keras.Model):
         self.conv3 = Conv2D(dim2, kernel_size=1, use_bias=False, name='conv3')
         self.bn3 = FrozenBatchNorm2D(name='bn3')
 
-        if self.downsample:
-            self.downsample = tf.keras.Sequential([
-                Conv2D(dim2, kernel_size=1, strides=strides, use_bias=False, name='0'),
-                FrozenBatchNorm2D(name='1')
-            ], name='downsample')
-        else:
-            self.downsample = None
+        self.downsample_conv = Conv2D(dim2, kernel_size=1, strides=strides,
+                                      use_bias=False, name='downsample/0')
+        self.downsample_bn = FrozenBatchNorm2D(name='downsample/1')
 
 
     def call(self, x):
@@ -132,8 +128,8 @@ class BottleNeck(tf.keras.Model):
         out = self.conv3(out)
         out = self.bn3(out)
 
-        if self.downsample is not None:
-            identity = self.downsample(x)
+        if self.downsample:
+            identity = self.downsample_bn(self.downsample_conv(x))
 
         out += identity
         out = self.relu(out)

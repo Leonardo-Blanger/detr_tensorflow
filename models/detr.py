@@ -34,13 +34,17 @@ class DETR(tf.keras.Model):
 
         self.class_embed = Linear(num_classes + 1, name='class_embed')
 
+        self.bbox_embed_linear1 = Linear(self.model_dim, name='bbox_embed/layers/0')
+        self.bbox_embed_linear2 = Linear(self.model_dim, name='bbox_embed/layers/1')
+        self.bbox_embed_linear3 = Linear(4, name='bbox_embed/layers/2')
+
         self.bbox_embed = tf.keras.Sequential([
-            Linear(self.model_dim, name='layers/0'),
+            self.bbox_embed_linear1,
             ReLU(),
-            Linear(self.model_dim, name='layers/1'),
+            self.bbox_embed_linear2,
             ReLU(),
-            Linear(4, name='layers/2')
-        ], name='bbox_embed')
+            self.bbox_embed_linear3,
+        ])
 
 
     def call(self, inp, training=False, post_process=False):
