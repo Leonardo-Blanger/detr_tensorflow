@@ -36,14 +36,7 @@ class DETR(tf.keras.Model):
         self.bbox_embed_linear1 = Linear(self.model_dim, name='bbox_embed_0')
         self.bbox_embed_linear2 = Linear(self.model_dim, name='bbox_embed_1')
         self.bbox_embed_linear3 = Linear(4, name='bbox_embed_2')
-
-        self.bbox_embed = tf.keras.Sequential([
-            self.bbox_embed_linear1,
-            ReLU(),
-            self.bbox_embed_linear2,
-            ReLU(),
-            self.bbox_embed_linear3,
-        ])
+        self.activation = ReLU()
 
 
     def call(self, inp, training=False, post_process=False):
@@ -56,7 +49,10 @@ class DETR(tf.keras.Model):
                               pos_encoding, training=training)[0]
 
         outputs_class = self.class_embed(hs)
-        outputs_coord = tf.sigmoid(self.bbox_embed(hs))
+
+        box_ftmps = self.activation(self.bbox_embed_linear1(hs))
+        box_ftmps = self.activation(self.bbox_embed_linear2(box_ftmps))
+        outputs_coord = tf.sigmoid(self.bbox_embed_linear3(box_ftmps))
 
         output = {'pred_logits': outputs_class[-1],
                   'pred_boxes': outputs_coord[-1]}
