@@ -63,7 +63,7 @@ class TransformerEncoder(tf.keras.Model):
 
         self.enc_layers = [EncoderLayer(model_dim, num_heads, dim_feedforward,
                                         dropout, activation, normalize_before,
-                                        name='layers/%d'%i)
+                                        name='layer_%d'%i)
                            for i in range(num_encoder_layers)]
         
         self.norm = norm
@@ -91,7 +91,7 @@ class TransformerDecoder(tf.keras.Model):
 
         self.dec_layers = [DecoderLayer(model_dim, num_heads, dim_feedforward,
                                         dropout, activation, normalize_before,
-                                        name='layers/%d'%i)
+                                        name='layer_%d'%i)
                            for i in range(num_decoder_layers)]
 
         self.norm = norm
@@ -275,14 +275,14 @@ class MultiHeadAttention(tf.keras.layers.Layer):
     def build(self, input_shapes):
         in_dim = sum([shape[-1] for shape in input_shapes[:3]])
         self.in_proj_weight = tf.Variable(
-            tf.zeros((in_dim, self.model_dim), dtype=tf.float32), name='in_proj_weight')
+            tf.zeros((in_dim, self.model_dim), dtype=tf.float32), name='in_proj_kernel')
         self.in_proj_bias = tf.Variable(tf.zeros((in_dim,), dtype=tf.float32),
                                         name='in_proj_bias')
 
         self.out_proj_weight = tf.Variable(
-            tf.zeros((self.model_dim, self.model_dim), dtype=tf.float32), name='out_proj/kernel')
+            tf.zeros((self.model_dim, self.model_dim), dtype=tf.float32), name='out_proj_kernel')
         self.out_proj_bias = tf.Variable(
-            tf.zeros((self.model_dim,), dtype=tf.float32), name='out_proj/bias')
+            tf.zeros((self.model_dim,), dtype=tf.float32), name='out_proj_bias')
 
 
 

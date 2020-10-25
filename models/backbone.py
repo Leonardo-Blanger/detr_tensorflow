@@ -109,8 +109,8 @@ class BottleNeck(tf.keras.Model):
         self.bn3 = FrozenBatchNorm2D(name='bn3')
 
         self.downsample_conv = Conv2D(dim2, kernel_size=1, strides=strides,
-                                      use_bias=False, name='downsample/0')
-        self.downsample_bn = FrozenBatchNorm2D(name='downsample/1')
+                                      use_bias=False, name='downsample_0')
+        self.downsample_bn = FrozenBatchNorm2D(name='downsample_1')
 
 
     def call(self, x):

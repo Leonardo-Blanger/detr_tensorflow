@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, ReLU
 
 from .backbone import ResNet50Backbone
-from .custom_layers import Linear
+from .custom_layers import Linear, FixedEmbedding
 from .position_embeddings import PositionEmbeddingSine
 from .transformer import Transformer
 from utils import cxcywh2xyxy
@@ -18,7 +18,7 @@ class DETR(tf.keras.Model):
         super().__init__(**kwargs)
         self.num_queries = num_queries
 
-        self.backbone = backbone or ResNet50Backbone(name='backbone/0/body')
+        self.backbone = backbone or ResNet50Backbone(name='backbone')
         self.transformer = transformer or Transformer(return_intermediate_dec=True,
                                                       name='transformer')
         self.model_dim = self.transformer.model_dim
@@ -28,15 +28,14 @@ class DETR(tf.keras.Model):
 
         self.input_proj = Conv2D(self.model_dim, kernel_size=1, name='input_proj')
 
-        self.query_embed = tf.Variable(
-            tf.zeros((num_queries, self.model_dim), dtype=tf.float32),
-            name='query_embed/kernel')
+        self.query_embed = FixedEmbedding((num_queries, self.model_dim),
+                                          name='query_embed')
 
         self.class_embed = Linear(num_classes + 1, name='class_embed')
 
-        self.bbox_embed_linear1 = Linear(self.model_dim, name='bbox_embed/layers/0')
-        self.bbox_embed_linear2 = Linear(self.model_dim, name='bbox_embed/layers/1')
-        self.bbox_embed_linear3 = Linear(4, name='bbox_embed/layers/2')
+        self.bbox_embed_linear1 = Linear(self.model_dim, name='bbox_embed_0')
+        self.bbox_embed_linear2 = Linear(self.model_dim, name='bbox_embed_1')
+        self.bbox_embed_linear3 = Linear(4, name='bbox_embed_2')
 
         self.bbox_embed = tf.keras.Sequential([
             self.bbox_embed_linear1,
@@ -53,7 +52,7 @@ class DETR(tf.keras.Model):
         masks = self.downsample_masks(masks, x)
         pos_encoding = self.pos_encoder(masks)
 
-        hs = self.transformer(self.input_proj(x), masks, self.query_embed,
+        hs = self.transformer(self.input_proj(x), masks, self.query_embed(None),
                               pos_encoding, training=training)[0]
 
         outputs_class = self.class_embed(hs)
@@ -107,4 +106,3 @@ class DETR(tf.keras.Model):
             if verbose:
                 print('Loading', var.name)
             var = var.assign(detr_weights[var.name[:-2]])
-
