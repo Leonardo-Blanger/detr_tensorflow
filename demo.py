@@ -5,10 +5,9 @@ import tensorflow as tf
 from models import build_detr_resnet50
 from utils import read_jpeg_image, preprocess_image, absolute2relative
 
-
 detr = build_detr_resnet50()
 detr.build()
-detr.load_from_pickle('detr-r50-e632da11.pickle')
+detr.load_weights('detr-r50-e632da11.h5')
 
 
 CLASSES = [

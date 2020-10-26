@@ -19,8 +19,8 @@ parser.add_argument('--backbone', type=str, default=None,
                     choices=('resnet50', 'resnet50-dc5', 'resnet101', 'resnet101-dc5'),
                     help='Choice of backbone CNN for the model.')
 parser.add_argument('--frozen_weights', type=str, default=None,
-                    help='Path to the pretrained weights file. Please use the pth2pickle.py' +
-                    ' script to convert the oficial PyTorch versions into .pickle.')
+                    help='Path to the pretrained weights file. Please check the repository' +
+                    'for links to download tensorflow ports of the official ones.')
 parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--results_file', type=str, default='results.json',
                     help='.json file to save the results in the COCO format.')
@@ -60,7 +60,7 @@ model_fns = {
 
 detr = model_fns[args.backbone](num_classes=91)
 detr.build()
-detr.load_from_pickle(args.frozen_weights)
+detr.load_weights(args.frozen_weights)
 
 
 dataset = tf.data.Dataset.from_generator(lambda: coco_data, (tf.int32, tf.string))

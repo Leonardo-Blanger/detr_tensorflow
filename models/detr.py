@@ -93,12 +93,3 @@ class DETR(tf.keras.Model):
                   'labels': labels,
                   'boxes': boxes}
         return output
-
-    def load_from_pickle(self, pickle_file, verbose=False):
-        with open(pickle_file, 'rb') as f:
-            detr_weights = pickle.load(f)
-
-        for var in self.variables:
-            if verbose:
-                print('Loading', var.name)
-            var = var.assign(detr_weights[var.name[:-2]])
