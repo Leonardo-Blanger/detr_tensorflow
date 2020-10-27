@@ -8,7 +8,7 @@ This project is my attempt at a Tensorflow implementation of the DETR architectu
 
 DETR, which stands for **De**tection **Tr**ansformers, was proposed by a team from the Facebook AI group, and it is, as of today, a radical shift from the current approaches to perform Deep Learning based Object Detection.
 
-Instead of filtering and refining a set of object proposals, as done by two-stage techniques like Faster-RCNN and its adaptations, or generating dense detection grids, as done by single-stage techniques like SSD and YOLO, DETR frames the detection problem as an image to set mapping. With this formulation, both the architecture and the training process become significantly easier. There is no need for hand-designed anchor matching schemes or post-processing steps like Non Max Suppression to discard redundant detections.
+Instead of filtering and refining a set of object proposals, as done by two-stage techniques like Faster-RCNN and its adaptations, or generating dense detection grids, as done by single-stage techniques like SSD and YOLO, DETR frames the detection problem as an image to set mapping. With this formulation, both the architecture and the training process become significantly simpler. There is no need for hand-designed anchor matching schemes or post-processing steps like Non Max Suppression to discard redundant detections.
 
 DETR uses a CNN backbone to extract a higher level feature representation of the image, which is then fed into a Transformer model. The Transformer Encoder is responsible for processing this image representation, while the Decoder maps a fixed set of learned object queries to detections, performing attention over the Encoder's output.
 
@@ -20,7 +20,7 @@ For more details into the technique, please refer to their [paper](https://ai.fa
 
 After spending some time working with Object Detection for my Master's degree, and wanting to learn more about this apparently useful thing called Transformers that everybody keeps talking about, I came across this very cool idea that proposes a completely different way of doing Object Detection. So I decided to make it accessible to the Tensorflow community as well. This implementation had the main purpose of allowing myself to understand the technique more in depth, while also being an exercise on the Tensorflow framework. 
 
-I tried my best to replicate the precise behavior of the original Pytorch implementation, trying to account for small details like the difference between how convolutions use padding in the two frameworks. This way, we can convert the existing Pytorch weights to an intermediate format and load them in this implementation. This turned out to be a great exercise to better understand not only the DETR architecture, but also how both frameworks work at a greater level of detail.
+I tried my best to replicate the precise behavior of the original Pytorch implementation, trying to account for small details like the difference between how convolutions use padding in the two frameworks. This way, we can convert the existing Pytorch weights to the Tensorflow/Keras format and load them in this implementation. This turned out to be a great exercise to better understand not only the DETR architecture, but also how both frameworks work at a greater level of detail.
 
 Currently, I still have not implemented any training related code, so the only way to use this implementation is by loading the converted Pytorch weights. I also did not implement the Panoptic Segmentation part yet. Regarding the Object Detection part, that is already working.
 
@@ -37,35 +37,30 @@ DETR-DC5 | R101 | 44.9 | 44.8
 
 ## Requirements
 
-The code was tested with `python 3.7.5` and `tensorflow 2.2.0`. In order to run the evaluation, you'll also need the `pycocotools` library.
+The code was tested with `python 3.8.5` and `tensorflow-gpu 2.3.1`. For running the evaluation, we used the `pycocotools 2.0.2` library. You can install all the required packages from PyPI:
 
 ```bash
-pip install -U 'git+https://github.com/cocodataset/cocoapi.git#subdirectory=PythonAPI'
+pip install -r requirements.txt
 ```
 
 ## How to Use
 
-First, download the frozen Pytorch weights `.pth` file for the model version you want to use from the official implementation's Github repo [here](https://github.com/facebookresearch/detr). Then use the provided `pth2pickle.py` script to convert the weights into a pickled python dictionary. For instance:
+First, download the converted Pytorch weights in the TF/Keras `.h5` file format for the model version you want to use from [here](https://drive.google.com/drive/folders/1OMzJNxsx-D5lyLgrQokLvbpvrZ5rM9rW?usp=sharing).
 
-```bash
-wget https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth
-python pth2pickle.py --checkpoint=detr-r50-e632da11.pth
-```
-
-You can use one of the pre-built loading methods from the `model` package to instantiate one of the four versions provided by the original implementation.
+You can use one of the pre-built loading methods from the `model` package to instantiate one of the four versions that are equivalent to the ones provided by the original implementation.
 
 ```python
 from models import build_detr_resnet50
 detr = build_detr_resnet50(num_classes=91) # 91 classes for the COCO dataset
 detr.build()
-detr.load_from_pickle("detr-r50-e632da11.pickle")
+detr.load_weights("detr-r50-e632da11.h5")
 ```
 
 Or directly instantiate the `models.DETR` class to create your own custom combination of backbone CNN, transformer architecture, and positional encoding scheme. Please, check the files `models/__init__.py` and `models/detr.py` for more details.
 
 The `utils.preprocess_image` function is designed to perform all the preprocessing required before running the model, including data normalization, resizing following the scheme used for training, and generating the image masks. It is completely implemented using only Tensorflow operations, so you can use it in combination with the `map` functionality from `tf.data.Dataset`.
 
-Finally, to get the final detections, call the model on your data with the `post_processing` flag. This way, it returns softmax scores instead of the pre-activation logits, and also discards the `no-object` dimension from the output. It doesn't discard low scored detections tough, but the output from DETR is simple enough that this isn't hard to do.
+Finally, to get the final detections, call the model on your data with the `post_processing` flag. This way, it returns softmax scores instead of the pre-activation logits, and also discards the `no-object` dimension from the output. It doesn't discard low scored detections tough, so as to give more flexibility in how to use the detections, but the output from DETR is simple enough that this isn't hard to do.
 
 ```python
 from utils import preprocess_image
@@ -102,8 +97,9 @@ I provided an `eval.py` script that evaluates the model on the COCO val2017 data
 ```bash
 python eval.py --coco_path=/path/to/coco \
                --backbone=resnet50-dc5 \
-			   --frozen_weights=detr-r50-dc5-f0fb7ef5.pickle \
-			   --results_file=resnet50_dc5_results.json --batch_size=1
+               --frozen_weights=detr-r50-dc5-f0fb7ef5.h5 \
+               --results_file=resnet50_dc5_results.json
+               --batch_size=1
 ```
 
 It will save the detections into the `resnet50_dc5_results.json` file, in the COCO dictionary format, so you can run evaluation again with the `--from_file` flag, and it won't need to perform image inference this time.
@@ -116,14 +112,13 @@ It will save the detections into the `resnet50_dc5_results.json` file, in the CO
 
 ## TODOs
 
-- [ ] Provide pretrained weights already in `hdf5` format.
-- [ ] Design a less hacky way of converting the weights. Convert directly into `hdf5` instead of `pickle`.
+- [x] Provide pretrained weights already in `hdf5` format.
 - [ ] Implement the training related code.
 - [ ] Repeat the paper's experiments.
 
 
 ## References
 
-* **The REDR paper:** Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, Sergey Zagoruyko, *End-to-end Object Detection with Transformers*, 2020, from the Facebook AI group. [link to paper](https://arxiv.org/abs/2005.12872)
+* **The DETR paper:** Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, Sergey Zagoruyko, *End-to-end Object Detection with Transformers*, 2020, from the Facebook AI group. [link to paper](https://arxiv.org/abs/2005.12872)
 
 * **The official Pytorch implementation:** https://github.com/facebookresearch/detr
