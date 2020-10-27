@@ -1,8 +1,6 @@
 __pycache__/*
 */__pycache__/*
 *~
-*.pickle
 *.pth
-README.html
-.markdown-preview.html
+*.h5
 *.json
