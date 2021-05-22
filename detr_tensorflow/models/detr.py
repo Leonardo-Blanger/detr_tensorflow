@@ -6,7 +6,7 @@ from .backbone import ResNet50Backbone
 from .custom_layers import Linear, FixedEmbedding
 from .position_embeddings import PositionEmbeddingSine
 from .transformer import Transformer
-from utils import cxcywh2xyxy
+from ..utils import cxcywh2xyxy
 
 
 class DETR(tf.keras.Model):
