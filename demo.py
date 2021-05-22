@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from os import path
 import tensorflow as tf
 
-from detr_tensorflow.models import build_detr_resnet50
+from detr_tensorflow.models.default import build_detr_resnet50
 from detr_tensorflow.utils import read_jpeg_image, preprocess_image, absolute2relative
 
 detr = build_detr_resnet50()
