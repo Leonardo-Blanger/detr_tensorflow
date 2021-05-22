@@ -1,4 +1,5 @@
 **/__pycache__/*
+detr_tensorflow.egg-info/
 *~
 *.pth
 *.h5
