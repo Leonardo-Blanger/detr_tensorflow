@@ -3,9 +3,9 @@ import tensorflow as tf
 
 
 class PositionEmbeddingSine(tf.keras.Model):
-    # These are the default parameters used in the original project
     def __init__(self, num_pos_features=64, temperature=10000,
                  normalize=False, scale=None, eps=1e-6, **kwargs):
+        # These are the default parameters used in the original project
         super().__init__(**kwargs)
 
         self.num_pos_features = num_pos_features
@@ -17,7 +17,6 @@ class PositionEmbeddingSine(tf.keras.Model):
             scale = 2 * np.pi
         self.scale = scale
         self.eps = eps
-
 
     def call(self, mask):
         not_mask = tf.cast(~mask, tf.float32)
@@ -33,13 +32,12 @@ class PositionEmbeddingSine(tf.keras.Model):
 
         pos_x = x_embed[..., tf.newaxis] / dim_t
         pos_y = y_embed[..., tf.newaxis] / dim_t
-        
+
         pos_x = tf.stack([tf.math.sin(pos_x[..., 0::2]),
                           tf.math.cos(pos_x[..., 1::2])], axis=4)
 
         pos_y = tf.stack([tf.math.sin(pos_y[..., 0::2]),
                           tf.math.cos(pos_y[..., 1::2])], axis=4)
-        
 
         shape = [tf.shape(pos_x)[i] for i in range(3)] + [-1]
         pos_x = tf.reshape(pos_x, shape)

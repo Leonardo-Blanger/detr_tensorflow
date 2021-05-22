@@ -7,32 +7,38 @@ from tqdm import tqdm
 
 from datasets import COCODatasetBBoxes
 import models
-from utils import preprocess_image, read_jpeg_image, absolute2relative, xyxy2xywh
+from utils import (preprocess_image, read_jpeg_image,
+                   absolute2relative, xyxy2xywh)
 
 
-parser = argparse.ArgumentParser('DETR evalutaion script for the COCO dataset.')
+parser = argparse.ArgumentParser(
+    'DETR evalutaion script for the COCO dataset.')
 
 parser.add_argument('--coco_path', type=str,
-                    help='Path to the COCO dataset root directory. For evaluation, only the' +
-                    ' validation data needs to be downloaded.')
+                    help='Path to the COCO dataset root directory. '
+                    'For evaluation, only the '
+                    'validation data needs to be downloaded.')
 parser.add_argument('--backbone', type=str, default=None,
-                    choices=('resnet50', 'resnet50-dc5', 'resnet101', 'resnet101-dc5'),
+                    choices=('resnet50', 'resnet50-dc5',
+                             'resnet101', 'resnet101-dc5'),
                     help='Choice of backbone CNN for the model.')
 parser.add_argument('--frozen_weights', type=str, default=None,
-                    help='Path to the pretrained weights file. Please check the repository' +
-                    'for links to download tensorflow ports of the official ones.')
+                    help='Path to the pretrained weights file. '
+                    'Please check the repository for links to download '
+                    'tensorflow ports of the official ones.')
 parser.add_argument('--batch_size', type=int, default=2)
 parser.add_argument('--results_file', type=str, default='results.json',
                     help='.json file to save the results in the COCO format.')
 parser.add_argument('--from_file', action='store_true',
-                    help='If specified, will compute the results using the predictions in' +
-                    ' the --results_file, instead of performing inference on the whole' +
-                    ' validation set again.')
+                    help='If specified, will compute the results using '
+                    'the predictions in the --results_file, instead of '
+                    'performing inference on the whole validation set again.')
 
 args = parser.parse_args()
 
 
-coco_data = COCODatasetBBoxes(args.coco_path, partition='val2017', return_boxes=False)
+coco_data = COCODatasetBBoxes(
+    args.coco_path, partition='val2017', return_boxes=False)
 
 
 def evaluate(results):
@@ -48,7 +54,8 @@ if args.from_file:
     exit()
 
 if args.backbone is None or args.frozen_weights is None:
-    raise Exception('If --from_file is not provided, both --backbone and --frozen_weights' +
+    raise Exception('If --from_file is not provided, '
+                    'both --backbone and --frozen_weights '
                     'must be provided.')
 
 model_fns = {
@@ -63,13 +70,17 @@ detr.build()
 detr.load_weights(args.frozen_weights)
 
 
-dataset = tf.data.Dataset.from_generator(lambda: coco_data, (tf.int32, tf.string))
-dataset = dataset.map(lambda img_id, img_path: (img_id, read_jpeg_image(img_path)))
-dataset = dataset.map(lambda img_id, image: (img_id, *preprocess_image(image)))
+dataset = tf.data.Dataset.from_generator(
+    lambda: coco_data, (tf.int32, tf.string))
+dataset = dataset.map(
+    lambda img_id, img_path: (img_id, read_jpeg_image(img_path)))
+dataset = dataset.map(
+    lambda img_id, image: (img_id, *preprocess_image(image)))
 
-dataset = dataset.padded_batch(batch_size=args.batch_size,
-                               padded_shapes=((), (None,None,3), (None,None)),
-                               padding_values=(None, tf.constant(0.0), tf.constant(True)))
+dataset = dataset.padded_batch(
+    batch_size=args.batch_size,
+    padded_shapes=((), (None, None, 3), (None, None)),
+    padding_values=(None, tf.constant(0.0), tf.constant(True)))
 
 results = []
 
@@ -78,7 +89,8 @@ with tqdm(total=len(coco_data)) as pbar:
         outputs = detr((images, masks), post_process=True)
 
         for img_id, scores, labels, boxes in zip(
-                img_ids, outputs['scores'], outputs['labels'], outputs['boxes']):
+                img_ids, outputs['scores'],
+                outputs['labels'], outputs['boxes']):
             img_id = img_id.numpy()
 
             img_info = coco_data.coco.loadImgs([img_id])[0]

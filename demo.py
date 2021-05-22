@@ -3,7 +3,9 @@ from os import path
 import tensorflow as tf
 
 from detr_tensorflow.models.default import build_detr_resnet50
-from detr_tensorflow.utils import read_jpeg_image, preprocess_image, absolute2relative
+from detr_tensorflow.utils import (read_jpeg_image,
+                                   preprocess_image,
+                                   absolute2relative)
 
 detr = build_detr_resnet50()
 detr.build()
@@ -22,9 +24,9 @@ CLASSES = [
     'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake',
     'chair', 'couch', 'potted plant', 'bed', 'N/A', 'dining table', 'N/A',
     'N/A', 'toilet', 'N/A', 'tv', 'laptop', 'mouse', 'remote', 'keyboard',
-    'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
+    'cellphone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'N/A',
     'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier',
-    'toothbrush'
+    'toothbrush',
 ]
 
 # colors for visualization
@@ -39,7 +41,8 @@ inp_image = tf.expand_dims(inp_image, axis=0)
 mask = tf.expand_dims(mask, axis=0)
 outputs = detr((inp_image, mask), post_process=True)
 
-labels, scores, boxes = [outputs[k][0].numpy() for k in ['labels', 'scores', 'boxes']]
+labels, scores, boxes = [outputs[k][0].numpy()
+                         for k in ['labels', 'scores', 'boxes']]
 
 keep = scores > 0.7
 labels = labels[keep]
@@ -47,8 +50,9 @@ scores = scores[keep]
 boxes = boxes[keep]
 boxes = absolute2relative(boxes, (image.shape[1], image.shape[0])).numpy()
 
+
 def plot_results(img, labels, probs, boxes):
-    plt.figure(figsize=(16,10))
+    plt.figure(figsize=(14, 8))
     plt.imshow(img)
     ax = plt.gca()
     for cl, p, (xmin, ymin, xmax, ymax), c in zip(
@@ -61,5 +65,6 @@ def plot_results(img, labels, probs, boxes):
     plt.axis('off')
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
     plt.show()
-    
+
+
 plot_results(image.numpy(), labels, scores, boxes)

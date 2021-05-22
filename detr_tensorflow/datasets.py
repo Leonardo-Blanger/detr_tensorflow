@@ -1,6 +1,5 @@
 from pycocotools.coco import COCO
 import numpy as np
-from PIL import Image
 from os import path
 import tensorflow as tf
 
@@ -14,24 +13,22 @@ class COCODatasetBBoxes(tf.keras.utils.Sequence):
         self.return_boxes = return_boxes
         self.ignore_crowded = ignore_crowded
 
-        self.coco = COCO(path.join(cocopath, 'annotations',
-                                   'instances_%s.json'%partition))
+        self.coco = COCO(path.join(
+            cocopath, 'annotations', f'instances_{partition}.json'))
         self.img_ids = sorted(self.coco.getImgIds())
-
 
     def __len__(self):
         return len(self.img_ids)
 
-
     def __getitem__(self, idx):
         img_info = self.coco.loadImgs(self.img_ids[idx])[0]
-        img_path = path.join(self.cocopath, self.partition, img_info['file_name'])
+        img_path = path.join(self.cocopath, self.partition,
+                             img_info['file_name'])
         if not self.return_boxes:
             return self.img_ids[idx], img_path
         ann_ids = self.coco.getAnnIds(self.img_ids[idx])
         boxes = self.parse_annotations(ann_ids)
         return self.img_ids[idx], img_path, boxes
-
 
     def parse_annotations(self, ann_ids):
         boxes = []
@@ -43,7 +40,3 @@ class COCODatasetBBoxes(tf.keras.utils.Sequence):
             box[2:4] += box[0:2]
             boxes.append(box)
         return boxes
-
-        
-
-        

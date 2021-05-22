@@ -1,4 +1,3 @@
-import pickle
 import tensorflow as tf
 from tensorflow.keras.layers import Conv2D, ReLU
 
@@ -19,14 +18,15 @@ class DETR(tf.keras.Model):
         self.num_queries = num_queries
 
         self.backbone = backbone or ResNet50Backbone(name='backbone')
-        self.transformer = transformer or Transformer(return_intermediate_dec=True,
-                                                      name='transformer')
+        self.transformer = transformer or Transformer(
+            return_intermediate_dec=True, name='transformer')
         self.model_dim = self.transformer.model_dim
 
         self.pos_encoder = pos_encoder or PositionEmbeddingSine(
             num_pos_features=self.model_dim // 2, normalize=True)
 
-        self.input_proj = Conv2D(self.model_dim, kernel_size=1, name='input_proj')
+        self.input_proj = Conv2D(
+            self.model_dim, kernel_size=1, name='input_proj')
 
         self.query_embed = FixedEmbedding((num_queries, self.model_dim),
                                           name='query_embed')
@@ -38,15 +38,16 @@ class DETR(tf.keras.Model):
         self.bbox_embed_linear3 = Linear(4, name='bbox_embed_2')
         self.activation = ReLU()
 
-
     def call(self, inp, training=False, post_process=False):
         x, masks = inp
         x = self.backbone(x, training=training)
         masks = self.downsample_masks(masks, x)
         pos_encoding = self.pos_encoder(masks)
 
-        hs = self.transformer(self.input_proj(x), masks, self.query_embed(None),
-                              pos_encoding, training=training)[0]
+        hs = self.transformer(self.input_proj(x), masks,
+                              self.query_embed(None),
+                              pos_encoding,
+                              training=training)[0]
 
         outputs_class = self.class_embed(hs)
 
@@ -61,12 +62,10 @@ class DETR(tf.keras.Model):
             output = self.post_process(output)
         return output
 
-
     def build(self, input_shape=None, **kwargs):
         if input_shape is None:
             input_shape = [(None, None, None, 3), (None, None, None)]
         super().build(input_shape, **kwargs)
-
 
     def downsample_masks(self, masks, x):
         masks = tf.cast(masks, tf.int32)
@@ -75,15 +74,15 @@ class DETR(tf.keras.Model):
         # does not expose the half_pixel_centers option in TF 2.2.0
         # The original Pytorch F.interpolate uses it like this
         masks = tf.compat.v1.image.resize_nearest_neighbor(
-            masks, tf.shape(x)[1:3], align_corners=False, half_pixel_centers=False)
+            masks, tf.shape(x)[1:3], align_corners=False,
+            half_pixel_centers=False)
         masks = tf.squeeze(masks, -1)
         masks = tf.cast(masks, tf.bool)
         return masks
 
-
     def post_process(self, output):
         logits, boxes = [output[k] for k in ['pred_logits', 'pred_boxes']]
-        
+
         probs = tf.nn.softmax(logits, axis=-1)[..., :-1]
         scores = tf.reduce_max(probs, axis=-1)
         labels = tf.argmax(probs, axis=-1)
