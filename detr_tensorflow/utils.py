@@ -25,9 +25,7 @@ def resize(image, min_side=800.0, max_side=1333.0):
 
 
 def build_mask(image):
-    h = tf.shape(image)[0]
-    w = tf.shape(image)[1]
-    return tf.zeros((h, w), dtype=tf.bool)
+    return tf.zeros(tf.shape(image)[:2], dtype=tf.bool)
 
 
 def cxcywh2xyxy(boxes):
