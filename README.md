@@ -37,33 +37,42 @@ DETR-DC5 | R101 | 44.9 | 44.8
 
 ## Requirements
 
-The code was tested with `python 3.8.5` and `tensorflow-gpu 2.3.1`. For running the evaluation, we used the `pycocotools 2.0.2` library. You can install all the required packages from PyPI:
+The code was tested with `python 3.8.10` and `tensorflow-gpu 2.4.1`. For running the evaluation, we used the `pycocotools 2.0.2` library. You can create a local environment with `conda` and install the requirements with:
 
 ```bash
-pip install -r requirements.txt
+# inside the repo's root directory
+conda env create --file=env.yml --prefix=./env
+conda activate ./env
 ```
 
 ## How to Use
 
-First, download the converted Pytorch weights in the TF/Keras `.h5` file format for the model version you want to use from [here](https://drive.google.com/drive/folders/1OMzJNxsx-D5lyLgrQokLvbpvrZ5rM9rW?usp=sharing).
+You can install it as a package as follows. If you are testing on a local environment (see above), make sure it is active.
 
-You can use one of the pre-built loading methods from the `model` package to instantiate one of the four versions that are equivalent to the ones provided by the original implementation.
+```bash
+# inside the repo's root directory
+python -m pip install .
+```
+
+In order to use the same models as in the official version, download the converted Pytorch weights in the TF/Keras `.h5` file format for the model version you want to use from [here](https://drive.google.com/drive/folders/1OMzJNxsx-D5lyLgrQokLvbpvrZ5rM9rW?usp=sharing).
+
+You can use one of the pre-built loading methods from the `models.default` package to instantiate one of the four versions that are equivalent to the ones provided by the original implementation.
 
 ```python
-from models import build_detr_resnet50
+from detr_tensorflow.models.default import build_detr_resnet50
 detr = build_detr_resnet50(num_classes=91) # 91 classes for the COCO dataset
 detr.build()
 detr.load_weights("detr-r50-e632da11.h5")
 ```
 
-Or directly instantiate the `models.DETR` class to create your own custom combination of backbone CNN, transformer architecture, and positional encoding scheme. Please, check the files `models/__init__.py` and `models/detr.py` for more details.
+Or directly instantiate the `models.DETR` class to create your own custom combination of backbone CNN, transformer architecture, and positional encoding scheme. Please, check the files `models/default.py` and `models/detr.py` for more details.
 
-The `utils.preprocess_image` function is designed to perform all the preprocessing required before running the model, including data normalization, resizing following the scheme used for training, and generating the image masks. It is completely implemented using only Tensorflow operations, so you can use it in combination with the `map` functionality from `tf.data.Dataset`.
+The `detr_tensorflow.utils.preprocess_image` function is designed to perform all the preprocessing required before running the model, including data normalization, resizing following the scheme used for training, and generating the image masks. It is completely implemented using only Tensorflow operations, so you can use it in combination with the `map` functionality from `tf.data.Dataset`.
 
 Finally, to get the final detections, call the model on your data with the `post_processing` flag. This way, it returns softmax scores instead of the pre-activation logits, and also discards the `no-object` dimension from the output. It doesn't discard low scored detections tough, so as to give more flexibility in how to use the detections, but the output from DETR is simple enough that this isn't hard to do.
 
 ```python
-from utils import preprocess_image
+from detr_tensorflow.utils import preprocess_image, absolute2relative
 
 inp_image, mask = preprocess_image(image)
 inp_image = tf.expand_dims(inp_image, axis=0)
