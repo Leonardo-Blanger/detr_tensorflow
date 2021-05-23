@@ -1,4 +1,0 @@
-tensorflow-gpu==2.3.1
-pycocotools==2.0.2
-matplotlib==3.3.2
-tqdm==4.50.2
