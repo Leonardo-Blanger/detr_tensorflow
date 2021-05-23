@@ -5,10 +5,10 @@ from pycocotools.cocoeval import COCOeval
 import tensorflow as tf
 from tqdm import tqdm
 
-from datasets import COCODatasetBBoxes
-import models
-from utils import (preprocess_image, read_jpeg_image,
-                   absolute2relative, xyxy2xywh)
+from detr_tensorflow.datasets import COCODatasetBBoxes
+from detr_tensorflow import models
+from detr_tensorflow.utils import (preprocess_image, read_jpeg_image,
+                                   absolute2relative, xyxy2xywh)
 
 
 parser = argparse.ArgumentParser(
@@ -59,10 +59,10 @@ if args.backbone is None or args.frozen_weights is None:
                     'must be provided.')
 
 model_fns = {
-    'resnet50': models.build_detr_resnet50,
-    'resnet50-dc5': models.build_detr_resnet50_dc5,
-    'resnet101': models.build_detr_resnet101,
-    'resnet101-dc5': models.build_detr_resnet101_dc5
+    'resnet50': models.default.build_detr_resnet50,
+    'resnet50-dc5': models.default.build_detr_resnet50_dc5,
+    'resnet101': models.default.build_detr_resnet101,
+    'resnet101-dc5': models.default.build_detr_resnet101_dc5
 }
 
 detr = model_fns[args.backbone](num_classes=91)
